@@ -22,7 +22,7 @@ public class SignEnchant extends EssentialsSign {
     protected boolean onSignCreate(final ISign sign, final User player, final String username, final IEssentials ess) throws SignException, ChargeException {
         final ItemStack stack;
         try {
-            stack = sign.getLine(1).equals("*") || sign.getLine(1).equalsIgnoreCase("any") ? null : getItemStack(sign.getLine(1), 1, ess);
+            stack = sign.getLine(1).equals("*") || sign.getLine(1).equalsIgnoreCase("any") || sign.getLine(1).equalsIgnoreCase("gear") ? null : getItemStack(sign.getLine(1), 1, ess);
         } catch (SignException e) {
             sign.setLine(1, "§c<item|any>");
             throw e;
@@ -66,7 +66,7 @@ public class SignEnchant extends EssentialsSign {
 
     @Override
     protected boolean onSignInteract(ISign sign, User player, String username, IEssentials ess) throws SignException, ChargeException {
-        final ItemStack search = sign.getLine(1).equals("*") || sign.getLine(1).equalsIgnoreCase("any") ? null : getItemStack(sign.getLine(1), 1, ess);
+        ItemStack search = sign.getLine(1).equals("*") || sign.getLine(1).equalsIgnoreCase("any") || sign.getLine(1).equalsIgnoreCase("gear") ? null : getItemStack(sign.getLine(1), 1, ess);
         final Trade charge = getTrade(sign, 3, ess);
         charge.isAffordableFor(player);
         final String[] enchantLevel = sign.getLine(2).split(":");
@@ -88,7 +88,16 @@ public class SignEnchant extends EssentialsSign {
         if (playerHand == null || playerHand.getAmount() != 1 || (playerHand.containsEnchantment(enchantment) && playerHand.getEnchantmentLevel(enchantment) == level)) {
             throw new SignException(tl("missingItems", 1, sign.getLine(1)));
         }
-        if (search != null && playerHand.getType() != search.getType()) {
+
+        //Workaround to allow "gear" on a sign
+        String itemType = playerHand.getType().toString();
+        if (search == null) {
+            if (itemType.contains("SWORD") || itemType.contains("SPADE") || itemType.contains("PICKAXE") || itemType.contains("AXE") || itemType.contains("HELMET") || itemType.contains("CHESTPLATE") || itemType.contains("LEGGINGS") || itemType.contains("BOOTS")) {
+                search = new ItemStack(playerHand.getType());
+            }
+        }
+
+            if (search != null && playerHand.getType() != search.getType()) {
             throw new SignException(tl("missingItems", 1, search.getType().toString().toLowerCase(Locale.ENGLISH).replace('_', ' ')));
         }
 
