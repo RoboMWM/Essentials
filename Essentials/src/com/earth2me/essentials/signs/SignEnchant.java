@@ -84,18 +84,22 @@ public class SignEnchant extends EssentialsSign {
             level = enchantment.getMaxLevel();
         }
 
+        //Workaround to allow "gear" on a sign
+        if (search == null && sign.getLine(1).equalsIgnoreCase("gear")) {
+            String itemType =  player.getBase().getItemInHand().getType().toString();
+            if (itemType.contains("SWORD") || itemType.contains("SPADE") || itemType.contains("PICKAXE") || itemType.contains("AXE") || itemType.contains("HELMET") || itemType.contains("CHESTPLATE") || itemType.contains("LEGGINGS") || itemType.contains("BOOTS")) {
+                search = new ItemStack(player.getBase().getItemInHand().getType());
+            } else {
+                throw new SignException(tl("missingItems", 1, sign.getLine(1)));
+            }
+        }
+
         final ItemStack playerHand = player.getBase().getItemInHand();
         if (playerHand == null || playerHand.getAmount() != 1 || (playerHand.containsEnchantment(enchantment) && playerHand.getEnchantmentLevel(enchantment) == level)) {
             throw new SignException(tl("missingItems", 1, sign.getLine(1)));
         }
 
-        //Workaround to allow "gear" on a sign
-        String itemType = playerHand.getType().toString();
-        if (search == null) {
-            if (itemType.contains("SWORD") || itemType.contains("SPADE") || itemType.contains("PICKAXE") || itemType.contains("AXE") || itemType.contains("HELMET") || itemType.contains("CHESTPLATE") || itemType.contains("LEGGINGS") || itemType.contains("BOOTS")) {
-                search = new ItemStack(playerHand.getType());
-            }
-        }
+
 
             if (search != null && playerHand.getType() != search.getType()) {
             throw new SignException(tl("missingItems", 1, search.getType().toString().toLowerCase(Locale.ENGLISH).replace('_', ' ')));
